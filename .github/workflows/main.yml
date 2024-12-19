@@ -1,0 +1,44 @@
+name: Build and Deploy with EAS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step to checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step to set up Node.js for the project
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      # Step to install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step to install EAS CLI
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      # Set Expo token from GitHub Secrets to environment variable
+      - name: Set Expo token
+        run: echo "EXPO_TOKEN=${{ secrets.EXPO_TOKEN }}" >> $GITHUB_ENV
+
+      # Run EAS Build for Android (APK)
+      - name: Build with EAS (Android APK)
+        run: eas build --platform android --profile androidapk --non-interactive
+
+      # Upload the build artifact (APK)
+      - name: Upload Android APK build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-apk
+          path: build/android/*.apk
